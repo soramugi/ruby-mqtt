@@ -12,26 +12,19 @@ module MQTT
     class_option :ssl,      type: :boolean, default: false, desc: 'Default: --no-ssl'
 
     desc 'configration [ENV]', 'Configuration setting.'
-    def configration(env=:default)
-      opt = client_opt
+    def configration(env=nil)
+      env = env || options[:env]
+      opt = {}
       if ask('Setting type', ['uri', 'host']) == 'uri'
         # uri
-        opt = ask('Uri to be connected.') unless opt.is_a?(String)
+        opt = ask('Uri to be connected.', options[:uri])
       else
         # host
-        opt = {} unless opt.is_a?(Hash)
-        host = opt[:host] || ask('Host')
-        port = opt[:port] || ask('Port')
-        opt.merge!(host: host)
-        opt.merge!(port: port)
+        opt.merge!(host: ask('Host', options[:host]))
+        opt.merge!(port: ask('Port', options[:port]))
         if ask('Setting username and password ?', ['y', 'n']) == 'y'
-          username = opt[:username] || ask('Username')
-          password = opt[:password] || ask('Password')
-          opt.merge!(username: username)
-          opt.merge!(password: password)
-        else
-          opt.delete(:username)
-          opt.delete(:password)
+          opt.merge!(username: ask('Username', options[:username]))
+          opt.merge!(password: ask('Password', options[:password]))
         end
       end
       generate_env(env,opt)
@@ -103,12 +96,15 @@ module MQTT
       STDIN.gets.chomp
     end
 
-    def ask(message, selects=[])
-      if selects.length > 0
+    def ask(message, select=[])
+      if select.is_a?(Array) && select.length > 0
         while true
-          answer = get_stdin("#{message} [#{selects.join('/')}]")
-          return answer if selects.include?(answer)
+          answer = get_stdin("#{message} [#{select.join('/')}]")
+          return answer if select.include?(answer)
         end
+      elsif select != []
+        answer = get_stdin("#{message} [Default: #{select}]")
+        return answer || select
       else
         get_stdin(message)
       end
