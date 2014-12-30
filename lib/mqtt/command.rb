@@ -36,16 +36,16 @@ module MQTT
         options[:mqtt_server]
       elsif options[:username] && options[:password]
         {
-          remote_host: options[:host],
-          remote_port: options[:port],
+          host: options[:host],
+          port: options[:port],
           username: options[:username],
           password: options[:password],
           ssl: options.ssl?,
         }
       elsif options[:host] && options[:port]
         {
-          remote_host: options[:host],
-          remote_port: options[:port],
+          host: options[:host],
+          port: options[:port],
           ssl: options.ssl?,
         }
       end
