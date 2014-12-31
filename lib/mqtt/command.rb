@@ -49,64 +49,64 @@ module MQTT
       puts 'success!'
     end
 
-    private
-
-    def client
-      MQTT::Client.connect(client_opt)
-    end
-
-    def client_opt
-      if File.exists?(env_path(options[:env]))
-        YAML.load_file(env_path(options[:env]))
-      elsif options[:uri]
-        options[:uri]
-      elsif options[:username] && options[:password]
-        {
-          host: options[:host],
-          port: options[:port],
-          username: options[:username],
-          password: options[:password],
-          ssl: options.ssl?,
-        }
-      elsif options[:host] && options[:port]
-        {
-          host: options[:host],
-          port: options[:port],
-          ssl: options.ssl?,
-        }
+    no_commands do
+      def client
+        MQTT::Client.connect(client_opt)
       end
-    end
 
-    def env_path(env)
-      File.join(Dir.home, '.ruby-mqtt', "#{env}.yml")
-    end
-
-    def generate_env(env,opts)
-      dir = File.join(Dir.home, '.ruby-mqtt')
-      Dir.mkdir(dir) unless File.exists?(dir)
-      yml_file = File.join(dir, "#{env}.yml")
-      open(yml_file,'w') do |f|
-        YAML.dump(opts,f)
-      end
-      puts "Generate env #{yml_file}"
-    end
-
-    def get_stdin(message)
-      print "#{message} : "
-      STDIN.gets.chomp
-    end
-
-    def ask(message, select=[])
-      if select.is_a?(Array) && select.length > 0
-        while true
-          answer = get_stdin("#{message} [#{select.join('/')}]")
-          return answer if select.include?(answer)
+      def client_opt
+        if File.exists?(env_path(options[:env]))
+          YAML.load_file(env_path(options[:env]))
+        elsif options[:uri]
+          options[:uri]
+        elsif options[:username] && options[:password]
+          {
+            host: options[:host],
+            port: options[:port],
+            username: options[:username],
+            password: options[:password],
+            ssl: options.ssl?,
+          }
+        elsif options[:host] && options[:port]
+          {
+            host: options[:host],
+            port: options[:port],
+            ssl: options.ssl?,
+          }
         end
-      elsif select != []
-        answer = get_stdin("#{message} [Default: #{select}]")
-        return answer || select
-      else
-        get_stdin(message)
+      end
+
+      def env_path(env)
+        File.join(Dir.home, '.ruby-mqtt', "#{env}.yml")
+      end
+
+      def generate_env(env,opts)
+        yml_file = env_path(env)
+        dir = File.dirname(yml_file)
+        Dir.mkdir(dir) unless File.exists?(dir)
+        open(yml_file,'w') do |f|
+          YAML.dump(opts,f)
+        end
+        puts "Generate env #{yml_file}"
+      end
+
+      def get_stdin(message)
+        print "#{message} : "
+        STDIN.gets.chomp
+      end
+
+      def ask(message, select=[])
+        if select.is_a?(Array) && select.length > 0
+          while true
+            answer = get_stdin("#{message} [#{select.join('/')}]")
+            return answer if select.include?(answer)
+          end
+        elsif select != []
+          answer = get_stdin("#{message} [Default: #{select}]")
+          return answer == '' ? select : answer
+        else
+          get_stdin(message)
+        end
       end
     end
 
