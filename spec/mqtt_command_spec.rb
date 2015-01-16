@@ -10,7 +10,7 @@ describe MQTT::Command do
   context "executing client" do
 
     before do
-      allow_any_instance_of(MQTT::Command).to receive(:client).and_return(client)
+      expect(MQTT::Client).to receive(:connect).and_return(client)
     end
 
     describe :get do
@@ -58,7 +58,7 @@ describe MQTT::Command do
 
     context "Setting type uri" do
       before do
-        allow_any_instance_of(MQTT::Command).to receive(:get_stdin).and_return('uri', 'y')
+        expect(STDIN).to receive(:gets).and_return('uri', 'y')
       end
 
       it "should exec" do
@@ -70,7 +70,7 @@ describe MQTT::Command do
     end
     context "Setting type host" do
       before do
-        allow_any_instance_of(MQTT::Command).to receive(:get_stdin).and_return('host', 'y')
+        expect(STDIN).to receive(:gets).and_return('host', 'y', 'y', 'y', 'y', 'y')
       end
 
       it "should exec" do
